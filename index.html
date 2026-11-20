@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Super Compilador - Taller de Agilidad Mental para PC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .font-title {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Botones y tarjetas interactivos para mouse en PC */
+        .btn-pc {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .btn-pc:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 6px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-pc:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .draggable-card {
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .draggable-card:active {
+            cursor: grabbing;
+            transform: scale(1.04) rotate(1deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Área de Soltar Drag & Drop */
+        .drop-zone {
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .drop-zone.drag-over {
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            border-color: #10b981 !important;
+            transform: scale(1.02);
+        }
+
+        /* Animación suave de fondo */
+        .glow-effect {
+            box-shadow: 0 0 35px rgba(14, 165, 233, 0.25);
+        }
+
+        /* Personalización de barra de desplazamiento para escritorio */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen bg-slate-900 text-slate-100 flex flex-col p-4 md:p-6 overflow-hidden">
+
+    <!-- CABECERA DE ESCRITORIO -->
+    <header class="w-full bg-slate-800/90 border-2 border-slate-700 rounded-2xl p-4 px-6 mb-4 flex justify-between items-center shadow-2xl backdrop-blur-md">
+        <div class="flex items-center gap-4">
+            <div class="bg-gradient-to-br from-amber-400 to-amber-600 p-3 rounded-2xl shadow-lg border-2 border-amber-300">
+                <span class="text-4xl" role="img" aria-label="Compilador">⚙️</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-title font-bold text-amber-400 tracking-wide flex items-center gap-3">
+                    El Súper Compilador del Taller
+                    <span class="text-sm font-semibold bg-sky-900 text-sky-300 border border-sky-700 px-3 py-1 rounded-full uppercase tracking-wider">Edición PC Escritorio</span>
+                </h1>
+                <p class="text-lg text-slate-300 font-medium">Entrenamiento Cognitivo de Optimización de Código</p>
+            </div>
+        </div>
+
+        <!-- Indicadores Superiores -->
+        <div class="flex items-center gap-6">
+            <!-- Barra de Eficiencia -->
+            <div class="bg-slate-900/80 border border-slate-700 px-5 py-2.5 rounded-2xl flex items-center gap-4">
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Eficiencia Digital</span>
+                    <span id="efficiency-percentage" class="text-2xl font-black text-emerald-400">0%</span>
+                </div>
+                <div class="w-32 bg-slate-800 h-4 rounded-full overflow-hidden border border-slate-700">
+                    <div id="efficiency-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <!-- Contador de Estrellas -->
+            <div class="bg-slate-900/80 border border-amber-500/40 px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-inner">
+                <span class="text-3xl">⭐</span>
+                <div>
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block">Logros</span>
+                    <span id="star-count" class="text-2xl font-black text-white">0 / 4</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- DASHBOARD PRINCIPAL EN 2 COLUMNAS (16:9 ESCRITORIO) -->
+    <div class="flex-1 grid grid-cols-12 gap-6 h-[calc(100vh-120px)] min-h-[600px]">
+        
+        <!-- PANEL LATERAL IZQUIERDO: CONTROLES, VOZ E INSTRUCCIONES (4 COLUMNAS) -->
+        <aside class="col-span-4 bg-slate-800/80 border-2 border-slate-700 rounded-3xl p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+            <div class="space-y-6">
+                
+                <!-- Tarjeta del Asistente del Taller -->
+                <div class="bg-gradient-to-r from-slate-900 to-sky-950 border-2 border-sky-800/60 p-5 rounded-2xl flex items-center gap-4 shadow-lg">
+                    <div class="text-5xl bg-sky-900/50 p-2 rounded-2xl border border-sky-500/30">👴‍🏫</div>
+                    <div>
+                        <h2 class="text-xl font-bold text-sky-300 font-title">Don Roberto</h2>
+                        <p class="text-sm text-sky-200/80">Tu Maestro Optimizador</p>
+                    </div>
+                </div>
+
+                <!-- Botón Gigante de Lectura en Voz Alta -->
+                <button id="btn-speech" onclick="toggleSpeech()" class="btn-pc w-full bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold p-4 rounded-2xl flex items-center justify-center gap-3 text-xl border-2 border-sky-400 shadow-xl">
+                    <span id="speech-icon" class="text-3xl">🔊</span>
+                    <span id="speech-text" class="font-title tracking-wide">Escuchar Explicación</span>
+                </button>
+
+                <!-- Panel Informativo del Nivel Actual -->
+                <div class="bg-slate-900/90 border-2 border-slate-700 p-5 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span id="sidebar-level-badge" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-3 py-1 rounded-xl text-sm">
+                            Nivel Actual
+                        </span>
+                        <span id="sidebar-concept" class="text-xs font-bold bg-slate-800 text-sky-300 border border-slate-600 px-3 py-1 rounded-lg">
+                            Teoría de Compiladores
+                        </span>
+                    </div>
+
+                    <h3 id="sidebar-title" class="text-2xl font-title font-bold text-white leading-snug">
+                        ¡Bienvenido al Taller!
+                    </h3>
+
+                    <div id="sidebar-description" class="text-lg text-slate-300 leading-relaxed font-medium bg-slate-800/60 p-4 rounded-xl border border-slate-700/50 max-h-[220px] overflow-y-auto">
+                        Selecciona iniciar para entrenar tu cerebro eliminando tareas repetitivas y haciendo que los programas funcionen el doble de rápido.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botón de Reiniciar/Navegación del Taller -->
+            <div class="pt-4 border-t border-slate-700/80 flex items-center justify-between">
+                <button onclick="resetWholeGame()" class="btn-pc bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold px-5 py-3 rounded-xl border border-slate-500 text-base flex items-center gap-2">
+                    <span>🔄</span> Reiniciar Taller
+                </button>
+                <span class="text-xs font-bold text-slate-400">Control por Mouse Activo 🖱️</span>
+            </div>
+        </aside>
+
+        <!-- ÁREA CENTRAL DE JUEGO (8 COLUMNAS) -->
+        <main class="col-span-8 bg-slate-800/80 border-2 border-slate-700 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl relative glow-effect">
+            
+            <!-- PANTALLA DE INICIO / BIENVENIDA -->
+            <section id="view-welcome" class="h-full flex flex-col justify-center items-center text-center space-y-8 p-6">
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-gradient-to-r from-amber-500 to-sky-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
+                    <div class="relative bg-slate-900 border-4 border-amber-400 p-8 rounded-full">
+                        <span class="text-8xl">💡</span>
+                    </div>
+                </div>
+
+                <div class="max-w-2xl space-y-4">
+                    <h2 class="text-4xl font-title font-bold text-amber-400">¿Qué es la Optimización?</h2>
+                    <p class="text-2xl text-slate-200 leading-relaxed">
+                        Es el arte de <strong>hacer las cosas más sencillas, rápidas y eficientes</strong> sin gastar energía de más.
+                    </p>
+                    <div class="bg-slate-900/80 border border-sky-500/30 p-5 rounded-2xl text-left text-lg text-sky-200 space-y-2">
+                        <p class="font-bold text-sky-400 flex items-center gap-2 text-xl">
+                            <span>🖥️</span> Diseñado para tu computadora:
+                        </p>
+                        <p>• Arrastra con el mouse elementos desordenados hacia sus contenedores correspondientes.</p>
+                        <p>• Toma el tiempo que requieras. Cada acierto mantiene tu mente en plena forma.</p>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="btn-pc bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-title font-bold text-3xl px-12 py-5 rounded-2xl border-2 border-emerald-300 shadow-2xl flex items-center gap-4">
+                    <span>¡Iniciar Entrenamiento!</span>
+                    <span class="text-4xl">🚀</span>
+                </button>
+            </section>
+
+            <!-- CONTENEDOR DINÁMICO DE NIVELES -->
+            <section id="view-game" class="hidden h-full flex-col justify-between space-y-4">
+                
+                <!-- Encabezado del Desafío del Nivel -->
+                <div class="bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🎯</span>
+                        <div>
+                            <h4 class="text-xs uppercase font-bold text-amber-400 tracking-wider">Objetivo Cognitivo</h4>
+                            <p id="level-goal" class="text-xl font-bold text-white">Cargando objetivo...</p>
+                        </div>
+                    </div>
+                    <div id="level-status-pill" class="bg-sky-900/60 text-sky-300 border border-sky-600 px-4 py-2 rounded-xl text-sm font-bold">
+                        En Proceso ⏳
+                    </div>
+                </div>
+
+                <!-- ÁREA INTERACTIVA (DRAG & DROP / CARDS) -->
+                <div id="game-workspace" class="flex-1 bg-slate-900/90 rounded-2xl border-2 border-dashed border-slate-700 p-6 flex items-center justify-center relative overflow-hidden">
+                    <!-- Contenido inyectado dinámicamente -->
+                </div>
+
+                <!-- BARRA INFERIOR DE MENSAJES Y SIGUIENTE NIVEL -->
+                <div class="bg-slate-900/90 border-2 border-slate-700 p-4 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span id="feedback-icon" class="text-3xl">💬</span>
+                        <p id="feedback-text" class="text-xl font-bold text-slate-300">
+                            Arrastra o selecciona las piezas en pantalla para resolver.
+                        </p>
+                    </div>
+
+                    <button id="btn-next-stage" onclick="nextLevel()" class="hidden btn-pc bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-title font-bold text-2xl px-8 py-3 rounded-xl border-2 border-emerald-300 flex items-center gap-3">
+                        <span>Siguiente Desafío</span>
+                        <span class="text-3xl">➡️</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- PANTALLA FINAL DE RESULTADOS -->
+            <section id="view-victory" class="hidden h-full flex-col justify-center items-center text-center space-y-6 p-6">
+                <div class="text-9xl animate-bounce">🏆</div>
+                <h2 class="text-5xl font-title font-bold text-amber-400">¡Felicidades, Maestro Optimizador!</h2>
+                <p class="text-2xl text-slate-200 max-w-2xl leading-relaxed">
+                    Has completado todos los niveles de optimización de compiladores. Tu agilidad mental y capacidad de simplificación están al máximo nivel.
+                </p>
+
+                <div class="bg-slate-900 border-2 border-amber-500/50 p-6 rounded-3xl max-w-xl w-full space-y-4 shadow-2xl">
+                    <h3 class="text-2xl font-bold text-amber-300">Resumen de Competencias Entrenadas:</h3>
+                    <div class="grid grid-cols-2 gap-3 text-left text-base text-slate-300">
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">✓ Plegamiento Local</div>
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">✓ Invariantes de Ciclo</div>
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">✓ Limpieza Global de Código</div>
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">✓ Reducción de Mirilla</div>
+                    </div>
+                </div>
+
+                <button onclick="resetWholeGame()" class="btn-pc bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-title font-bold text-3xl px-10 py-4 rounded-2xl border-2 border-sky-300 flex items-center gap-3">
+                    <span>Volver a Entrenar</span>
+                    <span>🔄</span>
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- AUDIO SINTETIZADOR Y LÓGICA DEL JUEGO -->
+    <script>
+        // --- EFECTOS DE SONIDO SINTETIZADOS (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playAudio(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(850, now + 0.06);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                osc.start(now);
+                osc.stop(now + 0.06);
+            } else if (type === 'drag') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(400, now + 0.08);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'success') {
+                // Acorde triunfal
+                [523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(freq, now + i * 0.08);
+                    g.gain.setValueAtTime(0.2, now + i * 0.08);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
+                    o.start(now + i * 0.08);
+                    o.stop(now + i * 0.08 + 0.3);
+                });
+            } else if (type === 'victory') {
+                const notes = [440, 554.37, 659.25, 880, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'sine';
+                    o.frequency.value = freq;
+                    g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.35);
+                    o.start(now + idx * 0.12);
+                    o.stop(now + idx * 0.12 + 0.35);
+                });
+            }
+        }
+
+        // --- SISTEMA LECTOR DE VOZ (SpeechSynthesis) ---
+        let speechActive = false;
+        const synth = window.speechSynthesis;
+
+        function speak(text) {
+            if (!synth) return;
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.88; // Velocidad pausada y entendible
+            utterance.pitch = 1.0;
+            synth.speak(utterance);
+        }
+
+        function toggleSpeech() {
+            playAudio('click');
+            speechActive = !speechActive;
+            const btnText = document.getElementById('speech-text');
+            const btnIcon = document.getElementById('speech-icon');
+
+            if (speechActive) {
+                btnText.textContent = "Detener Lectura";
+                btnIcon.textContent = "🔇";
+                readCurrentState();
+            } else {
+                btnText.textContent = "Escuchar Explicación";
+                btnIcon.textContent = "🔊";
+                synth.cancel();
+            }
+        }
+
+        function readCurrentState() {
+            if (!speechActive) return;
+            const activeView = document.querySelector('main > section:not(.hidden)').id;
+
+            if (activeView === 'view-welcome') {
+                speak("¡Bienvenido al Súper Compilador del Taller! Este juego te ayuda a entrenar tu agilidad mental simplificando tareas. Presiona el botón verde con el mouse para iniciar.");
+            } else if (activeView === 'view-game') {
+                const title = document.getElementById('sidebar-title').textContent;
+                const desc = document.getElementById('sidebar-description').textContent;
+                const goal = document.getElementById('level-goal').textContent;
+                speak(`${title}. ${desc}. Objetivo: ${goal}`);
+            } else if (activeView === 'view-victory') {
+                speak("¡Felicidades, Maestro Optimizador! Has completado con éxito todos los desafíos de entrenamiento mental.");
+            }
+        }
+
+        // --- NIVELES Y ESTRUCTURA TEÓRICA DE OPTIMIZACIÓN ---
+        const levelConfig = [
+            {
+                id: 1,
+                title: "1. Optimización Local",
+                concept: "Bloques Básicos (3.1.1)",
+                goal: "Une con el mouse las expresiones matemáticas idénticas dentro del mismo bloque.",
+                description: "En la optimización local simplificamos cálculos numéricos directos (Plegamiento de Constantes). Evaluamos expresiones fijas una sola vez para no repetir cuentas innecesarias.",
+                speech: "Nivel 1: Optimización Local. En lugar de hacer una suma cada vez que el programa se ejecuta, une los números para guardar de una vez el resultado final.",
+                render: function(target) {
+                    target.innerHTML = `
+                        <div class="w-full max-w-2xl space-y-6 text-center">
+                            <p class="text-xl text-slate-300 font-medium">
+                                Arrastra la tarjeta con el resultado simplificado a la caja de la fórmula:
+                            </p>
+                            
+                            <!-- Fórmula destino -->
+                            <div id="drop-target-l1" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropLevel1(event)" class="drop-zone bg-slate-800 border-4 border-dashed border-amber-400 p-6 rounded-3xl max-w-md mx-auto shadow-xl">
+                                <span class="text-sm uppercase font-bold text-amber-400 block mb-2">Instrucción Actual sin Optimizar:</span>
+                                <div class="text-3xl font-black text-white bg-slate-900 p-4 rounded-xl border border-slate-700">
+                                    Precio = 10 + 5
+                                </div>
+                                <p class="text-sm text-slate-400 mt-2">📥 Suelta aquí la respuesta correcta</p>
+                            </div>
+
+                            <!-- Opciones arrastratorias -->
+                            <div class="flex justify-center gap-6 pt-4">
+                                <div draggable="true" ondragstart="handleDragStart(event, '10+5')" class="draggable-card btn-pc bg-slate-800 border-2 border-slate-600 hover:border-amber-400 p-5 rounded-2xl text-2xl font-bold text-slate-200">
+                                    🧮 Dejar 10 + 5
+                                </div>
+                                <div draggable="true" ondragstart="handleDragStart(event, '15')" class="draggable-card btn-pc bg-gradient-to-r from-emerald-600 to-teal-600 border-2 border-emerald-400 p-5 rounded-2xl text-3xl font-black text-white shadow-lg">
+                                    ✨ Simplificar a 15
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                id: 2,
+                title: "2. Optimización de Ciclos",
+                concept: "Invariantes de Bucle (3.1.2)",
+                goal: "Arrastra la tarea repetitiva fuera del bucle para ejecutarla solo una vez.",
+                description: "Las instrucciones dentro de una rutina repetitiva (bucle) que siempre dan el mismo resultado deben sacarse afuera. Así se evita calcular lo mismo cientos de veces.",
+                speech: "Nivel 2: Optimización de Ciclos. Sacar las tareas repetitivas fuera del bucle. Arrastra la compra del ingrediente fuera de la rueda de repetición.",
+                render: function(target) {
+                    target.innerHTML = `
+                        <div class="w-full max-w-3xl grid grid-cols-2 gap-6 items-center">
+                            <!-- Bucle interior -->
+                            <div class="bg-slate-800/90 border-3 border-sky-500 p-5 rounded-3xl text-center space-y-3 relative">
+                                <span class="text-sm font-bold bg-sky-900 text-sky-200 px-3 py-1 rounded-full uppercase">🔄 Bucle Repetitivo (10 Iteraciones)</span>
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-slate-300 font-bold">1. Servir Agua</div>
+                                
+                                <div id="loop-card" draggable="true" ondragstart="handleDragStart(event, 'sugar')" class="draggable-card bg-amber-500/20 border-2 border-amber-400 p-4 rounded-xl text-amber-300 font-black text-lg flex justify-between items-center">
+                                    <span>🧂 Comprar Azúcar</span>
+                                    <span class="text-xs bg-amber-500 text-slate-950 px-2 py-1 rounded font-bold">¡Arrastra afuera!</span>
+                                </div>
+                                
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-slate-300 font-bold">2. Mezclar Té</div>
+                            </div>
+
+                            <!-- Zona exterior -->
+                            <div id="drop-target-l2" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropLevel2(event)" class="drop-zone border-4 border-dashed border-emerald-400 bg-emerald-950/20 p-8 rounded-3xl text-center space-y-3 min-h-[220px] flex flex-col justify-center items-center">
+                                <span class="text-4xl">🧺</span>
+                                <span class="text-lg font-bold text-emerald-400">Zona Fuera del Bucle</span>
+                                <p class="text-sm text-slate-400">Suelta aquí la tarea invariable para hacerla 1 sola vez antes de iniciar la rutina.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                id: 3,
+                title: "3. Optimización Global",
+                concept: "Código Muerto (3.1.3)",
+                goal: "Apaga los interruptores de las rutas o bloques inalcanzables.",
+                description: "El análisis global de flujo de datos identifica funciones o instrucciones que jamás llegarán a ejecutarse (código muerto). Eliminarlas limpia la memoria del programa.",
+                speech: "Nivel 3: Optimización Global. Encuentra y desactiva las habitaciones o instrucciones a las que nadie puede acceder jamás.",
+                render: function(target) {
+                    target.innerHTML = `
+                        <div class="w-full max-w-2xl space-y-6 text-center">
+                            <p class="text-xl text-slate-300 font-medium">Haz clic para desactivar el bloque inalcanzable (Código Muerto):</p>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="bg-slate-800 border-2 border-emerald-500 p-6 rounded-2xl text-left space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-2xl">🟢</span>
+                                        <span class="text-xs bg-emerald-950 text-emerald-300 px-2 py-1 rounded font-bold border border-emerald-700">ACTIVO</span>
+                                    </div>
+                                    <h5 class="text-xl font-bold text-white">Ruta Principal</h5>
+                                    <p class="text-sm text-slate-400">Si el usuario inicia sesión ➔ Mostrar Inicio.</p>
+                                </div>
+
+                                <div id="dead-block" onclick="solveLevel3()" class="btn-pc bg-rose-950/40 border-2 border-rose-500 hover:border-rose-400 p-6 rounded-2xl text-left space-y-2 relative">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-2xl">🔴</span>
+                                        <span class="text-xs bg-rose-900 text-rose-200 px-2 py-1 rounded font-bold">CÓDIGO MUERTO</span>
+                                    </div>
+                                    <h5 class="text-xl font-bold text-rose-200">Ruta Jamás Usada</h5>
+                                    <p class="text-sm text-rose-300/80">Código después de 'Terminar Programa'.</p>
+                                    <div class="pt-2 text-center">
+                                        <span class="bg-rose-600 text-white font-bold text-sm px-4 py-2 rounded-xl shadow inline-block">🗑️ Clic para Eliminar</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                id: 4,
+                title: "4. Optimización de Mirilla",
+                concept: "Peephole Optimization (3.1.4)",
+                goal: "Reemplaza 2 instrucciones redundantes por 1 instrucción atómica nativa.",
+                description: "La optimización de mirilla analiza una pequeña ventana flotante de código máquina y sustituye patrones ineficientes por equivalentes directos del procesador.",
+                speech: "Nivel 4: Optimización de Mirilla. Observa con la lupa 2 movimientos torpes y reemplázalos por una sola instrucción inteligente.",
+                render: function(target) {
+                    target.innerHTML = `
+                        <div class="w-full max-w-2xl space-y-6 text-center">
+                            <p class="text-xl text-slate-300 font-medium">
+                                Observa las 2 instrucciones en la mirilla y selecciona la mejor simplificación:
+                            </p>
+
+                            <div class="bg-slate-800 border-4 border-amber-400/80 p-6 rounded-3xl max-w-md mx-auto space-y-3 relative shadow-2xl">
+                                <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 text-xs font-black px-4 py-1 rounded-full uppercase tracking-wider">Ventana de Mirilla (2 Líneas)</span>
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-lg font-mono text-amber-300 font-bold">1. Sumar 1 a posición X</div>
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-lg font-mono text-amber-300 font-bold">2. Restar 1 a posición X</div>
+                            </div>
+
+                            <div class="flex justify-center gap-6 pt-2">
+                                <button onclick="solveLevel4(false)" class="btn-pc bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-300 font-bold px-6 py-4 rounded-2xl text-lg">
+                                    ❌ Mantener las 2 instrucciones
+                                </button>
+                                <button onclick="solveLevel4(true)" class="btn-pc bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-title font-bold px-8 py-4 rounded-2xl text-2xl border-2 border-emerald-300 shadow-xl">
+                                    🔍 Reemplazar por 'No hacer nada' (0 pasos)
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        ];
+
+        // --- ESTADO Y CONTROL DE FLUJO ---
+        let currentLevelIdx = 0;
+        let stars = 0;
+        let draggedItem = null;
+
+        function startGame() {
+            playAudio('click');
+            document.getElementById('view-welcome').classList.add('hidden');
+            document.getElementById('view-game').classList.remove('hidden');
+            document.getElementById('view-game').classList.add('flex');
+            currentLevelIdx = 0;
+            stars = 0;
+            updateMetrics();
+            loadStage(currentLevelIdx);
+        }
+
+        function loadStage(idx) {
+            const config = levelConfig[idx];
+            
+            // Actualizar Panel Lateral Izquierdo
+            document.getElementById('sidebar-level-badge').textContent = `Desafío ${config.id} de ${levelConfig.length}`;
+            document.getElementById('sidebar-title').textContent = config.title;
+            document.getElementById('sidebar-concept').textContent = config.concept;
+            document.getElementById('sidebar-description').textContent = config.description;
+
+            // Actualizar Área Central
+            document.getElementById('level-goal').textContent = config.goal;
+            document.getElementById('level-status-pill').textContent = "En Proceso ⏳";
+            document.getElementById('level-status-pill').className = "bg-sky-900/60 text-sky-300 border border-sky-600 px-4 py-2 rounded-xl text-sm font-bold";
+            document.getElementById('feedback-text').textContent = "Utiliza el mouse para resolver el desafío visual.";
+            document.getElementById('feedback-text').className = "text-xl font-bold text-slate-300";
+            document.getElementById('btn-next-stage').classList.add('hidden');
+
+            const workspace = document.getElementById('game-workspace');
+            config.render(workspace);
+
+            if (speechActive) {
+                speak(config.speech);
+            }
+        }
+
+        function updateMetrics() {
+            document.getElementById('star-count').textContent = `${stars} / ${levelConfig.length}`;
+            const percentage = Math.round((stars / levelConfig.length) * 100);
+            document.getElementById('efficiency-percentage').textContent = `${percentage}%`;
+            document.getElementById('efficiency-bar').style.width = `${percentage}%`;
+        }
+
+        // --- CONTROLADORES DE EVENTOS DRAG AND DROP (MOUSE PC) ---
+        function handleDragStart(e, itemData) {
+            playAudio('drag');
+            draggedItem = itemData;
+            e.dataTransfer.setData('text/plain', itemData);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        // Resolución Nivel 1
+        function handleDropLevel1(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (draggedItem === '15') {
+                playAudio('success');
+                const workspace = document.getElementById('game-workspace');
+                workspace.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <div class="bg-emerald-950 border-4 border-emerald-400 p-8 rounded-3xl max-w-md mx-auto shadow-2xl">
+                            <span class="text-sm uppercase font-bold text-emerald-400 block mb-2">¡Instrucción Optimizada!</span>
+                            <div class="text-5xl font-black text-white">Precio = 15</div>
+                        </div>
+                        <p class="text-2xl font-bold text-emerald-300">¡Plegamiento de Constantes Exitoso!</p>
+                    </div>
+                `;
+                completeStage("¡Excelente razonamiento! Has simplificado el cálculo en tiempo de compilación.");
+            } else {
+                showFeedback("Esa opción no simplifica la expresión. ¡Prueba arrastrando el número 15!", false);
+            }
+        }
+
+        // Resolución Nivel 2
+        function handleDropLevel2(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (draggedItem === 'sugar') {
+                playAudio('success');
+                const workspace = document.getElementById('game-workspace');
+                workspace.innerHTML = `
+                    <div class="text-center space-y-4 max-w-xl">
+                        <div class="bg-emerald-950 border-4 border-emerald-400 p-6 rounded-3xl shadow-2xl">
+                            <span class="text-2xl font-bold text-emerald-300 block mb-2">🧺 Fuera del Bucle: 🧂 Comprar Azúcar (1 Vez)</span>
+                            <p class="text-lg text-slate-200">El bucle ahora ejecuta solo lo necesario repetidamente sin ir a la tienda en cada iteración.</p>
+                        </div>
+                        <p class="text-2xl font-bold text-emerald-400">¡Movimiento de Invariantes Logrado!</p>
+                    </div>
+                `;
+                completeStage("¡Brillante! Redujiste el tiempo de ejecución drásticamente.");
+            }
+        }
+
+        // Resolución Nivel 3
+        function solveLevel3() {
+            playAudio('success');
+            const workspace = document.getElementById('game-workspace');
+            workspace.innerHTML = `
+                <div class="text-center space-y-4">
+                    <span class="text-7xl">🧹✨</span>
+                    <h4 class="text-3xl font-bold text-emerald-400">¡Código Muerto Removido!</h4>
+                    <p class="text-xl text-slate-200 max-w-md mx-auto">La memoria del programa quedó limpia de instrucciones inalcanzables.</p>
+                </div>
+            `;
+            completeStage("¡Fantástico! Eliminaste la redundancia global del programa.");
+        }
+
+        // Resolución Nivel 4
+        function solveLevel4(isCorrect) {
+            if (isCorrect) {
+                playAudio('success');
+                const workspace = document.getElementById('game-workspace');
+                workspace.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <div class="bg-emerald-950 border-4 border-emerald-400 p-6 rounded-3xl max-w-md mx-auto">
+                            <span class="text-4xl">🔍✨</span>
+                            <h4 class="text-3xl font-bold text-emerald-300 mt-2">Patrón Optimizado</h4>
+                            <p class="text-xl font-bold text-white mt-1">Sin operaciones innecesarias</p>
+                        </div>
+                        <p class="text-2xl font-bold text-emerald-400">¡Sustitución de Mirilla Completada!</p>
+                    </div>
+                `;
+                completeStage("¡Increíble agilidad visual! Has dominado los 4 tipos de optimización.");
+            } else {
+                showFeedback("Dar un paso adelante y uno atrás se anulan entre sí. ¡Prueba la opción de 'No hacer nada'!", false);
+            }
+        }
+
+        function showFeedback(text, isPositive = true) {
+            const fbText = document.getElementById('feedback-text');
+            fbText.textContent = text;
+            fbText.className = `text-xl font-bold ${isPositive ? 'text-emerald-400' : 'text-amber-400'}`;
+            if (speechActive) speak(text);
+        }
+
+        function completeStage(message) {
+            stars++;
+            updateMetrics();
+
+            document.getElementById('level-status-pill').textContent = "¡Completado! ✨";
+            document.getElementById('level-status-pill').className = "bg-emerald-900/80 text-emerald-300 border border-emerald-500 px-4 py-2 rounded-xl text-sm font-bold animate-pulse";
+            
+            showFeedback(message, true);
+            document.getElementById('btn-next-stage').classList.remove('hidden');
+
+            if (speechActive) {
+                speak(`${message} Presiona el botón verde de Siguiente Desafío para continuar.`);
+            }
+        }
+
+        function nextLevel() {
+            playAudio('click');
+            currentLevelIdx++;
+            if (currentLevelIdx < levelConfig.length) {
+                loadStage(currentLevelIdx);
+            } else {
+                showVictory();
+            }
+        }
+
+        function showVictory() {
+            playAudio('victory');
+            document.getElementById('view-game').classList.add('hidden');
+            document.getElementById('view-game').classList.remove('flex');
+            document.getElementById('view-victory').classList.remove('hidden');
+            document.getElementById('view-victory').classList.add('flex');
+
+            if (speechActive) {
+                speak("¡Felicidades, Maestro Optimizador! Has completado exitosamente todo el entrenamiento de optimización de código para tu cerebro.");
+            }
+        }
+
+        function resetWholeGame() {
+            playAudio('click');
+            document.getElementById('view-victory').classList.add('hidden');
+            document.getElementById('view-game').classList.add('hidden');
+            document.getElementById('view-welcome').classList.remove('hidden');
+            stars = 0;
+            currentLevelIdx = 0;
+            updateMetrics();
+        }
+    </script>
+</body>
+</html>
